@@ -1,0 +1,15 @@
+.idea/
+.DS_Store
+*.apk
+*.trace
+
+
+gen/
+out/
+obj/
+
+
+jni/*
+
+
+local.properties
