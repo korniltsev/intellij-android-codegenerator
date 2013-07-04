@@ -1,10 +1,12 @@
-package utils;
+package ru.korniltsev.intellij.android.utils;
 
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.psi.*;
 import com.intellij.psi.search.EverythingGlobalScope;
+import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
@@ -13,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AndroidUtils {
+public class MyAndroidUtils {
 
     public static
     @Nullable
@@ -27,13 +29,9 @@ public class AndroidUtils {
         return null;
     }
 
-    public static boolean isClassSubclassOfAdapter(final Project project, final PsiClass cls) {
-        PsiClass adapterClass = findAdapterClass(project);
-
-        if (adapterClass == null || !cls.isInheritor(adapterClass, true)) {
-            return false;
-        }
-        return true;
+    public static boolean isClassSubclassOfAdapter( final PsiClass cls) {
+        PsiClass adapterClass = findAdapterClass(cls.getProject());
+        return !(adapterClass == null || !cls.isInheritor(adapterClass, true));
     }
 
     private static PsiClass findAdapterClass(final Project project) {
@@ -61,26 +59,47 @@ public class AndroidUtils {
 
     public static
     @Nullable
-    String getLayoutReferenceName(@Nullable PsiElement elementAt) {
+    PsiFile getLayoutXMLFileFromCaret(@NotNull Editor e, @NotNull PsiFile f) {
+        int offset = e.getCaretModel().getOffset();
+        PsiElement candidate1 = f.findElementAt(offset);
+        PsiElement candidate2 = f.findElementAt(offset - 1);
+
+        PsiFile ret = findXmlResource(candidate1);
+        if (ret != null) {
+            return ret;
+        }
+        return findXmlResource(candidate2);
+    }
+
+    private static
+    @Nullable
+    PsiFile findXmlResource(PsiElement elementAt) {
         if (elementAt == null) {
             return null;
         }
         if (!(elementAt instanceof PsiIdentifier)) {
             return null;
         }
-        PsiElement RLayout = elementAt.getParent().getFirstChild();
-        if (RLayout == null) {
+        PsiElement rLayout = elementAt.getParent().getFirstChild();
+        if (rLayout == null) {
             return null;
         }
-        if ("R.layout".equals(RLayout.getText())) {
-            return elementAt.getText();
+        if (!"R.layout".equals(rLayout.getText())) {
+            return null;
         }
-        return null;
+        Project prj = elementAt.getProject();
+        String name = String.format("%s.xml", elementAt.getText());
+        PsiFile[] foundFiles = FilenameIndex
+                .getFilesByName(prj, name, new EverythingGlobalScope(prj));
+        if (foundFiles.length <= 0) {
+            return null;
+        }
+        return foundFiles[0];
     }
 
     public static
     @NotNull
-    List<AndroidView> getIdentfiersFromFile(@NotNull PsiFile f) {
+    List<AndroidView> getIDsFromXML(@NotNull PsiFile f) {
         final ArrayList<AndroidView> ret = new ArrayList<AndroidView>();
         f.accept(new XmlRecursiveElementVisitor() {
             @Override
@@ -89,9 +108,15 @@ public class AndroidUtils {
                 if (element instanceof XmlTag) {
                     XmlTag t = (XmlTag) element;
                     XmlAttribute id = t.getAttribute("android:id", null);
-                    if (id != null) {
-                        ret.add(new AndroidView(id.getValue(), t.getName()));
+                    if (id == null) {
+                        return;
                     }
+                    final String val = id.getValue();
+                    if (val == null) {
+                        return;
+                    }
+                    ret.add(new AndroidView(val, t.getName()));
+
                 }
 
             }
@@ -99,37 +124,4 @@ public class AndroidUtils {
         return ret;
     }
 
-    public static class AndroidView {
-        private String id;
-        private String name;
-        private String fieldName;
-
-        public AndroidView(@NotNull String id, @NotNull final String name) {
-            if (id.startsWith("@+id/")) {
-                this.id = "R.id." + id.split("\\@\\+id/")[1];
-            } else if (id.contains(":")) {
-                String[] s = id.split(":id/");
-                String packageStr = s[0].substring(1, s[0].length());
-                this.id = packageStr + ".R.id." + s[1];
-            }
-            this.name = name;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-
-        public void setFieldName(final String fieldName) {
-            this.fieldName = fieldName;
-        }
-
-        public String getFieldName() {
-            return fieldName;
-        }
-    }
 }

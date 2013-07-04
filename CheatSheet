@@ -1,0 +1,2 @@
+get file from editor
+PsiFile psiFile = PsiUtilBase.getPsiFileInEditor(editor, project);

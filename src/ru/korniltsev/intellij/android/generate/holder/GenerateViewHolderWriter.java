@@ -1,11 +1,10 @@
-package holder;
+package ru.korniltsev.intellij.android.generate.holder;
 
 import com.intellij.codeInsight.actions.ReformatAndOptimizeImportsProcessor;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.JavaCodeStyleManager;
-import com.intellij.refactoring.RefactoringFactory;
-import utils.AndroidUtils;
-import utils.BaseCodeGenerator;
+import ru.korniltsev.intellij.android.generate.BaseGenerateCodeWriter;
+import ru.korniltsev.intellij.android.utils.AndroidView;
 
 import java.util.List;
 
@@ -14,14 +13,14 @@ import java.util.List;
  * Date: 01.07.13
  * Time: 12:21
  */
-public class ViewHolderGenerator extends BaseCodeGenerator {
+public class GenerateViewHolderWriter extends BaseGenerateCodeWriter {
 
     public static final String COMMAND_NAME = "Generate ViewHolder pattern";
-    private List<AndroidUtils.AndroidView> views ;
+    private List<AndroidView> views ;
 
 
 
-    public ViewHolderGenerator(final PsiClass clazz, final List<AndroidUtils.AndroidView> views) {
+    public GenerateViewHolderWriter(final PsiClass clazz, final List<AndroidView> views) {
         super(clazz, COMMAND_NAME);
         this.views = views;
     }
@@ -31,15 +30,7 @@ public class ViewHolderGenerator extends BaseCodeGenerator {
     public void generate() {
         StringBuilder classStr = new StringBuilder();
 
-        for (AndroidUtils.AndroidView view : views) {
-            String[] words = view.getId().split("_");
-            StringBuilder fieldName = new StringBuilder("");
-            for (String word : words) {
-                String[] idTokens = word.split("\\.");
-                char[] chars = idTokens[idTokens.length - 1].toCharArray();
-                fieldName.append(chars);
-            }
-            view.setFieldName(fieldName.toString());
+        for (AndroidView view : views) {
             if (view.getName().contains(".")) {
                 classStr.append(String.format("public final %s %s;\n", view.getName(), view.getFieldName()));
             } else {
@@ -48,7 +39,7 @@ public class ViewHolderGenerator extends BaseCodeGenerator {
         }
         classStr.append("public final android.view.View root;\n");
         classStr.append("public ViewHolder(android.view.View root){\n");
-        for (AndroidUtils.AndroidView view : views) {
+        for (AndroidView view : views) {
             classStr.append(String.format("%s = (%s) root.findViewById(%s);\n",
                     view.getFieldName(),
                     view.getName(),
@@ -71,9 +62,9 @@ public class ViewHolderGenerator extends BaseCodeGenerator {
         new ReformatAndOptimizeImportsProcessor(prj, cls.getContainingFile(), true)
                 .runWithoutProgress();
 
-        //todo rename inplace
-        RefactoringFactory.getInstance(prj)
-                .createRename(newClass, null, true, false)
-                .run();
+//        //todo rename inplace
+//        RefactoringFactory.getInstance(prj)
+//                .createRename(newClass, null, true, false)
+//                .run();
     }
 }

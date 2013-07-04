@@ -1,17 +1,21 @@
 <idea-plugin version="2">
-  <id>com.yourcompany.unique.plugin.id</id>
-  <name>Plugin display name here</name>
+  <id>ru.korniltsev.intellij.android.generate</id>
+  <name>Android CodeGenerator</name>
   <version>1.0</version>
-  <vendor email="support@yourcompany.com" url="http://www.yourcompany.com">YourCompany</vendor>
+  <vendor email="korniltsev.anatoly@gmail.com" url="https://github.com/kurganec/intellij-android-codegenerator" >Korniltsev.Anatoly</vendor>
 
   <description><![CDATA[
-      Enter short description for your plugin here.<br>
-      <small>most HTML tags may be used</small>
+      This plugin helps you to generate dumb android specific code.
+      <ul>
+      <li>ViewHolder pattern</li>
+      <li>InjectViews</li>
+      <li>Implement Parcelable</li>
+      </ul>
+      Please feel free to contact me and ask any questions or suggest some features
       ]]></description>
 
   <change-notes><![CDATA[
-      Add change notes here.<br>
-      <small>most HTML tags may be used</small>
+      First release
       ]]>
   </change-notes>
 
@@ -34,12 +38,14 @@
 
   <actions>
     <!-- Add your actions here -->
-      <action id="GenerateAction" class="holder.GenerateHolderAction" text="Generates ViewHolder pattern" description="todo">
+      <action id="GenerateAction" class="ru.korniltsev.intellij.android.generate.holder.GenerateHolderAction" text="Generate ViewHolder pattern" >
           <add-to-group group-id="GenerateGroup" anchor="last" />
       </action>
-      <action id="ImplementParcelable" class="parcel.ImplementParcelableAction" text="Implement Parcelable"
-              description="Implement Parcelable">
+      <action id="ImplementParcelable" class="ru.korniltsev.intellij.android.generate.parcel.ImplementParcelableAction" text="Implement Parcelable">
           <add-to-group group-id="GenerateGroup" anchor="last"/>
+      </action>
+      <action id="InjectView" class="ru.korniltsev.intellij.android.generate.inject.InjectViewAction" text="@Inject Views">
+          <add-to-group group-id="GenerateGroup" anchor="last" />
       </action>
   </actions>
 
