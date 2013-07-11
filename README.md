@@ -1,4 +1,4 @@
-# Intellij Android CodeGenerator ([Download](https://github.com/kurganec/intellij-android-codegenerator/raw/master/intellij-android-codegenerator.zip))
+## Intellij Android CodeGenerator ([Download](https://github.com/kurganec/intellij-android-codegenerator/raw/master/intellij-android-codegenerator.zip))
 
 The code we generate:
 * @InjectView
